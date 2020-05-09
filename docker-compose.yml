@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+    uptime_redis:
+        container_name: uptime_redis
+        image: "redis:alpine"
+        ports:
+            - "6380:6379"
+        volumes:
+            - $PWD/db_data/redis-data:/var/lib/redis
+            - $PWD/db_data/redis.conf:/usr/local/etc/redis/redis.conf
+
+    uptime_db:
+        container_name: uptime_db
+        image: postgres
+        environment:
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - "5435:5432"
+        volumes:
+            - $PWD/db_data/postgres/data:/var/lib/postgresql/data
+    uptime_web:
+        container_name: uptime_web
+        build: .
+        command: tail -f /dev/null #python manage.py runserver 0.0.0.0:8000
+        volumes:
+            - .:/code
+        ports:
+            - "8002:8000"
+            - "3001:3000"
+        depends_on:
+            - uptime_db
+            - uptime_redis
